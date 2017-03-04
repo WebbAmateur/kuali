@@ -56,15 +56,19 @@ namespace KualiChallenge
         /// Trips' = Trips +1
         /// FloorsPassed' = FloorsPassed + Abs(CurrentFloor - floor)
         /// InService' = Trips' < 100 ? InService : false;
-        public void GoToFloor(int floor)
+        public async Task<int> GoToFloor(int floor)
         {
             // Close Door
+            await Task.Delay(DOOR_OPEN_CLOSE_DELAY);
 
             // Travel to destination
+
 
             // Record trip
 
             // Open Door
+
+            return floor;
         }
 
         #endregion
