@@ -8,6 +8,11 @@ namespace KualiChallenge
 {
     public class Elevator
     {
+        #region constants
+        const int FLOOR_TRAVEL_DELAY = 1000;
+        const int DOOR_OPEN_CLOSE_DELAY = 1000;
+        #endregion
+
 
         /// <summary>
         /// Constructor
@@ -17,22 +22,50 @@ namespace KualiChallenge
         /// Initialize with 0 floors passed
         /// </summary>
         /// <param name="floors"></param>
-        public Elevator(int floors)
+        public Elevator(int index, int floors, Controller controler)
         {
-            
+            Index = index;
             Floors = floors;
             CurrentFloor = 1;
             IsDoorOpen = false;
             Trips = 0;
             FloorsPassed = 0;
+            InService = true;
         }
 
         #region Properties
+        int Index { get; set; }
         int Floors { get; set; }
-        int CurrentFloor { get; set; }
+        public int CurrentFloor { get; private set; }
         bool IsDoorOpen { get; set; }
         int Trips { get; set; }
-        int FloorsPassed { get; set; }
+        int FloorsPassed { get; set; } // Assume that floors passed includes the current floor. From 1 to 4 is 3 floors passed
+        public bool InService { get; set;  }
+        public bool Available { get; set; }
+
+        #endregion
+
+        #region Public Interface
+
+        /// <summary>
+        /// Accept an assignment to go to a floor
+        /// </summary>
+        /// <param name="floor"></param>
+        /// Postcondition
+        /// CurrentFloor' = floor
+        /// Trips' = Trips +1
+        /// FloorsPassed' = FloorsPassed + Abs(CurrentFloor - floor)
+        /// InService' = Trips' < 100 ? InService : false;
+        public void GoToFloor(int floor)
+        {
+            // Close Door
+
+            // Travel to destination
+
+            // Record trip
+
+            // Open Door
+        }
 
         #endregion
 
