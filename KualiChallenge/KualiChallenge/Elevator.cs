@@ -11,6 +11,8 @@ namespace KualiChallenge
         #region constants
         const int FLOOR_TRAVEL_DELAY = 1000;
         const int DOOR_OPEN_CLOSE_DELAY = 1000;
+        const int PASSENGER_DELAY = 5000;
+        const int MAX_FLOORS_PASSED = 100;
         const int MIN_FLOOR = 1;
         #endregion
 
@@ -32,6 +34,7 @@ namespace KualiChallenge
             IsDoorOpen = false;
             Trips = 0;
             FloorsPassed = 0;
+            IsOccupied = false;
             InService = true;
         }
 
@@ -43,39 +46,96 @@ namespace KualiChallenge
         bool IsDoorOpen { get; set; }
         int Trips { get; set; }
         int FloorsPassed { get; set; } // Assume that floors passed includes the current floor. From 1 to 4 is 3 floors passed
+        public bool IsOccupied { get; set; }
         public bool InService { get; set;  }
-        public bool Available { get; set; }
+
 
         #endregion
 
         #region Public Interface
 
         /// <summary>
-        /// Accept an assignment to go to a floor
+        /// Accept and assignment to pick up passengers at startFloor and take them to endFloor
         /// </summary>
-        /// <param name="floor"></param>
+        /// <param name="startFloor"></param>
         /// Postcondition
         /// CurrentFloor' = floor
         /// Trips' = Trips +1
         /// FloorsPassed' = FloorsPassed + Abs(CurrentFloor - floor)
         /// InService' = Trips' < 100 ? InService : false;
-        public async Task<int> GoToFloor(int floor)
+        public async Task<int> MakeTrip(int startFloor, int endFloor)
         {
-            if (floor < MIN_FLOOR || floor > Floors || floor == CurrentFloor)
+            if (startFloor < MIN_FLOOR || startFloor > Floors || startFloor == CurrentFloor)
             {
                 // Doesn't count as a trip
-                return floor;
+                return startFloor;
             }
 
-            // Close Door
-            await Task.Delay(DOOR_OPEN_CLOSE_DELAY);
-            IsDoorOpen = false;
-            // Each elevator will report when it opens or closes its doors
-            Master.ReportCloseDoor(Index);
+            // Close the door before moving 
+
+
+            CloseDoor();
+
             
 
             // Travel to destination
 
+ 
+
+
+
+
+            // Record trip
+            Trips++;
+            FloorsPassed += floorDelta;
+            if (floorsPasses >= MAX_FLOORS_PASSED)
+            {
+                InService = false;
+            }
+
+            OpenDoor();
+
+            return startFloor;
+        }
+
+        /// <summary>
+        /// Open the Door
+        /// - Report the open door
+        /// </summary>
+        /// <returns></returns>
+        private async Task<int> OpenDoor()
+        {
+            await Task.Delay(DOOR_OPEN_CLOSE_DELAY);
+            IsDoorOpen = true;
+            // Each elevator will report when it opens or closes its doors
+            Master.ReportOpenDoor(Index);
+            return CurrentFloor;
+        }
+
+
+        /// <summary>
+        /// Close the door
+        ///  - Report the close door
+        /// </summary>
+        /// <returns></returns>
+        private async Task<int> CloseDoor()
+        {
+            await Task.Delay(DOOR_OPEN_CLOSE_DELAY);
+            IsDoorOpen = false;
+            // Each elevator will report when it opens or closes its doors
+            Master.ReportCloseDoor(Index);
+            return CurrentFloor;
+        }
+
+
+        /// <summary>
+        /// Travel from CurrentFloor to floor
+        /// - Report every floor change
+        /// </summary>
+        /// <param name="floor"></param>
+        /// <returns></returns>
+        private async Task<int> TravelToFloor(int floor)
+        {
             int floorChange;
             int floorDelta;
 
@@ -99,20 +159,10 @@ namespace KualiChallenge
 
                 //Each elevator will report as is moves from floor to floor
                 Master.ReportNewFloor(Index, CurrentFloor);
-
             }
 
-
-
-
-            // Record trip
-
-            // Open Door
-            await Task.Delay(DOOR_OPEN_CLOSE_DELAY);
-            IsDoorOpen = true;
-            Master.ReportOpenDoor(Index);
-
-            return floor;
+            return CurrentFloor;
+           
         }
 
         #endregion
