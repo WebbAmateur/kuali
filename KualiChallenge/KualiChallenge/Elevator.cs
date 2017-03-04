@@ -67,8 +67,13 @@ namespace KualiChallenge
         /// InService' = Trips' < 100 ? InService : false;
         public async Task<int> MakeTrip(int startFloor, int endFloor)
         {
+            //An elevator request can be made at any floor, to go to any other floor.
+
             int floorsTraveled = Math.Abs(CurrentFloor - startFloor) + Math.Abs(endFloor - startFloor);
 
+
+            // An elevator cannot proceed above the top floor
+            // An elevator cannot proceed below the ground floor (assume 1 as the min)
             if (startFloor < MIN_FLOOR || startFloor > Floors || endFloor < MIN_FLOOR || endFloor > Floors)
             {
                 // Doesn't count as a trip
@@ -102,10 +107,14 @@ namespace KualiChallenge
             await Task.Delay(PASSENGER_DELAY);
 
             // Record trip
+            // The elevator should keep track of how many trips it has made
             Trips++;
+
+            // and how many floors it has passed
             FloorsPassed += floorsTraveled;
             if (FloorsPassed >= MAX_FLOORS_PASSED)
             {
+                // The elevator should go into maintenance mode after 100 trips
                 InService = false;
             }
 

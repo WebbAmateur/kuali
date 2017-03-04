@@ -24,6 +24,7 @@ namespace KualiChallenge
 
             for(int index = 0; index < elevators; index++)
             {
+                //Initialize the elevator simulation with the desired number of elevators, and the desired number of floors.
                 Elevators[index] = new Elevator(index, floors, this);
             }
         }
@@ -51,32 +52,62 @@ namespace KualiChallenge
             {
 
                 // Find an elevator to make the trip
-                index = 1;
+                Elevator assignedElevator = AssignElevator(startFloor, endFloor);
+
+                // I am not handling the case when no elevator is available
+                if (assignedElevator == null)
+                {
+                    return -1;
+                }
+                index = assignedElevator.Index;
 
                 // Assign the elevator to the trip
-                Elevators[index].MakeTrip(startFloor, endFloor);
+                assignedElevator.MakeTrip(startFloor, endFloor);
             }
 
-            return index;
+            return index; 
         }
 
-        public async Task<Elevator> AssignElevator(int startFloor, int endFloor)
+
+        /// <summary>
+        /// Choose an elevator to make the trip
+        /// No new elevator will be assigned during this method, but elevators may become available
+        /// </summary>
+        /// <param name="startFloor"></param>
+        /// <param name="endFloor"></param>
+        /// <returns></returns>
+        public Elevator AssignElevator(int startFloor, int endFloor)
         {
             // Find all of the available elevators
             IEnumerable<Elevator> availableElevators = Elevators.Where(e => e.IsAvailable);
 
+            if (availableElevators.Count() == 0)
+            {
+                // No elevators are available try again later
+                return null;
+            }
+
             Elevator assignedElevator = availableElevators.First();
+            
             int floorDistance = Math.Abs(startFloor - assignedElevator.CurrentFloor);
 
-
+            // When an elevator request is made, the unoccupied elevator closest to it will answer the call
             foreach (Elevator current in availableElevators)
             {
                 int currentDistance = Math.Abs(startFloor - current.CurrentFloor);
                 if (currentDistance < floorDistance)
                 {
                     floorDistance = currentDistance;
+                    assignedElevator = current;
+                }
+
+                if(currentDistance == 0)
+                {
+                    return assignedElevator;
                 }
             }
+
+            return assignedElevator;
 
         }
 
