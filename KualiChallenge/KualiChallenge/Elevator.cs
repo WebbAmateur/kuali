@@ -65,35 +65,47 @@ namespace KualiChallenge
         /// InService' = Trips' < 100 ? InService : false;
         public async Task<int> MakeTrip(int startFloor, int endFloor)
         {
-            if (startFloor < MIN_FLOOR || startFloor > Floors || startFloor == CurrentFloor)
+            int floorsTraveled = Math.Abs(CurrentFloor - startFloor) + Math.Abs(endFloor - startFloor);
+
+            if (startFloor < MIN_FLOOR || startFloor > Floors || endFloor < MIN_FLOOR || endFloor > Floors)
             {
                 // Doesn't count as a trip
-                return startFloor;
+                return CurrentFloor;
             }
 
-            // Close the door before moving 
+
+            //  If necessary travel to startFloor
+            if (startFloor != CurrentFloor)
+            {
+                await CloseDoor();
+                await TravelToFloor(startFloor);
+                await OpenDoor();
+            }
+
+            // Invariant: CurrentFloor = startFloor AND IsDoorOpen
 
 
-            CloseDoor();
+            // Let passengers get on
+            await Task.Delay(PASSENGER_DELAY);
 
-            
+            await CloseDoor();
 
-            // Travel to destination
-
- 
-
+            await TravelToFloor(endFloor);
 
 
+            // Open the Door
+            await OpenDoor();
+
+            // Wait for the passengers to exit
+            await Task.Delay(PASSENGER_DELAY);
 
             // Record trip
             Trips++;
-            FloorsPassed += floorDelta;
-            if (floorsPasses >= MAX_FLOORS_PASSED)
+            FloorsPassed += floorsTraveled;
+            if (FloorsPassed >= MAX_FLOORS_PASSED)
             {
                 InService = false;
             }
-
-            OpenDoor();
 
             return startFloor;
         }

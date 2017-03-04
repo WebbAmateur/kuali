@@ -27,6 +27,7 @@ namespace KualiChallenge
 
         #region properties
         Elevator[] Elevators { get; set; }
+        int Floors { get; set; }
 
         #endregion
         /// <summary>
@@ -34,14 +35,25 @@ namespace KualiChallenge
         /// 
         /// </summary>
         /// <param name="floor"></param>
-        public void Request(int floor)
+        public async Task<int> RequestTrip(int startFloor, int endFloor)
         {
-            if (floor < MIN_FLOOR)
+            if (startFloor < MIN_FLOOR || startFloor > Floors || endFloor < MIN_FLOOR || endFloor > Floors)
             {
-                return;
+                return -1;
             }
 
+            // Find an elevator to make the trip
+            int index = 1;
+
+            // Assign the elevator to the trip
+            Elevators[index].MakeTrip(startFloor, endFloor);
+
+            return index;
         }
+
+
+
+
 
         /// <summary>
         /// Called by an elevator when it reaches a floor
