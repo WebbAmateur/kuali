@@ -40,14 +40,16 @@ namespace KualiChallenge
 
         #region Properties
         public Controller Master { get; set; }
-        int Index { get; set; }
+        public int Index { get; set; }
         int Floors { get; set; }
         public int CurrentFloor { get; private set; }
         bool IsDoorOpen { get; set; }
         int Trips { get; set; }
         int FloorsPassed { get; set; } // Assume that floors passed includes the current floor. From 1 to 4 is 3 floors passed
-        public bool IsOccupied { get; set; }
-        public bool InService { get; set;  }
+        bool IsOccupied { get; set; }
+        bool InService { get; set;  }
+
+        public bool IsAvailable { get { return !IsOccupied && InService; } }
 
 
         #endregion

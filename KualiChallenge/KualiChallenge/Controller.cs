@@ -8,6 +8,9 @@ namespace KualiChallenge
 {
     public class Controller
     {
+
+        private Object thisLock = new Object();
+
         const int MAX_TRIPS = 100;
         const int MIN_FLOOR = 1;
 
@@ -41,14 +44,40 @@ namespace KualiChallenge
             {
                 return -1;
             }
+            int index;
 
-            // Find an elevator to make the trip
-            int index = 1;
+            // Process one request at a time
+            lock (thisLock)
+            {
 
-            // Assign the elevator to the trip
-            Elevators[index].MakeTrip(startFloor, endFloor);
+                // Find an elevator to make the trip
+                index = 1;
+
+                // Assign the elevator to the trip
+                Elevators[index].MakeTrip(startFloor, endFloor);
+            }
 
             return index;
+        }
+
+        public async Task<Elevator> AssignElevator(int startFloor, int endFloor)
+        {
+            // Find all of the available elevators
+            IEnumerable<Elevator> availableElevators = Elevators.Where(e => e.IsAvailable);
+
+            Elevator assignedElevator = availableElevators.First();
+            int floorDistance = Math.Abs(startFloor - assignedElevator.CurrentFloor);
+
+
+            foreach (Elevator current in availableElevators)
+            {
+                int currentDistance = Math.Abs(startFloor - current.CurrentFloor);
+                if (currentDistance < floorDistance)
+                {
+                    floorDistance = currentDistance;
+                }
+            }
+
         }
 
 
